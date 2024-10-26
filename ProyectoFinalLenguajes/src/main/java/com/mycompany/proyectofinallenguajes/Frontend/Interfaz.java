@@ -33,6 +33,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import  com.mycompany.proyectofinallenguajes.Backend.Token;
+import com.mycompany.proyectofinallenguajes.Lexer.Lexer;
+import java.io.StringReader;
 
 /**
  *
@@ -177,10 +179,23 @@ boton.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
         String codigoFuente = textPane1.getText();
+        Lexer lexer = new Lexer(new StringReader(codigoFuente));
+        int token;
+        try {
+            while ((token = lexer.yylex()) != -1) {
+                System.out.println(token);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        java.util.List<Token> listaTokens = lexer.getLista();
+        System.out.println("Lista de tokens: " + listaTokens);
+        System.out.println("Lista de errores: " + lexer.getListaErrores());
 
 
 
-
+        colorearTokens(listaTokens);
     }
 });
 
