@@ -5,6 +5,7 @@
 package com.mycompany.proyectofinallenguajes.Frontend;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.mycompany.proyectofinallenguajes.Backend.Grafica;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -196,6 +197,42 @@ boton.addActionListener(new ActionListener() {
 
 
         colorearTokens(listaTokens);
+    }
+});
+
+
+//listener para crear archivo 
+
+
+// Añadir acción al ítem "Crear Grafico"
+generarGrafico.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Obtener el texto de entrada del JTextPane
+        String codigoFuente = textPane1.getText();
+
+        // Abrir JFileChooser para elegir la ruta de guardado
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Seleccionar ubicación para guardar la imagen");
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File archivo = fileChooser.getSelectedFile();
+            String filePath = archivo.getAbsolutePath();
+
+            // Asegurarse de que el archivo tenga la extensión .png
+            if (!filePath.toLowerCase().endsWith(".png")) {
+                filePath += ".png";
+            }
+
+            try {
+                // Analizar el código fuente y generar la imagen
+                Grafica.generarGraphviz(codigoFuente, filePath);
+                System.out.println("Gráfico generado y guardado en: " + filePath);
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 });
 
