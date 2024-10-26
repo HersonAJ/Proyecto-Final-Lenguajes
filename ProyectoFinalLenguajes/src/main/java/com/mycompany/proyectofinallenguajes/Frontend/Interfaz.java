@@ -5,6 +5,7 @@
 package com.mycompany.proyectofinallenguajes.Frontend;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.mycompany.proyectofinallenguajes.Backend.AnalizadorSintactico;
 import com.mycompany.proyectofinallenguajes.Backend.Grafica;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -194,7 +195,27 @@ boton.addActionListener(new ActionListener() {
         System.out.println("Lista de tokens: " + listaTokens);
         System.out.println("Lista de errores: " + lexer.getListaErrores());
 
+        AnalizadorSintactico parser = new AnalizadorSintactico(listaTokens);
+        parser.parse();
 
+        if (parser.errores.isEmpty()) {
+            errorLabel.setText("Análisis sintáctico completado con éxito.");
+            System.out.println("Análisis sintáctico completado con éxito.");
+        } else {
+            errorLabel.setText("Errores encontrados en el análisis sintáctico. Ver consola para más detalles.");
+            for (String error : parser.errores) {
+                System.err.println("Error sintáctico: " + error);
+                // Aquí resaltamos el error en la interfaz
+                try {
+                    String[] partesError = error.split(", en línea |, columna ");
+                    int linea = Integer.parseInt(partesError[1].trim());
+                    int columna = Integer.parseInt(partesError[2].trim());
+                    resaltarError(linea, columna);
+                } catch (Exception ex) {
+                    System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
+                }
+            }
+        }
 
         colorearTokens(listaTokens);
     }
@@ -220,7 +241,7 @@ generarGrafico.addActionListener(new ActionListener() {
             File archivo = fileChooser.getSelectedFile();
             String filePath = archivo.getAbsolutePath();
 
-            // Asegurarse de que el archivo tenga la extensión .png
+            
             if (!filePath.toLowerCase().endsWith(".png")) {
                 filePath += ".png";
             }
