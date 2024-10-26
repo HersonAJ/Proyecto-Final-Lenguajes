@@ -7,6 +7,7 @@ package com.mycompany.proyectofinallenguajes.Frontend;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.proyectofinallenguajes.Backend.AnalizadorSintactico;
 import com.mycompany.proyectofinallenguajes.Backend.Grafica;
+import com.mycompany.proyectofinallenguajes.Backend.ReporteErrores;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -257,6 +258,23 @@ generarGrafico.addActionListener(new ActionListener() {
     }
 });
 
+//generar reporte de errores
+reporteErrores.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Lexer lexer = new Lexer(new StringReader(textPane1.getText()));
+        int token;
+        try {
+            while ((token = lexer.yylex()) != -1) {
+                System.out.println(token);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        java.util.List<Token> listaErrores = lexer.getListaErrores();
+        new ReporteErrores(listaErrores);
+    }
+});
 
 
     }
