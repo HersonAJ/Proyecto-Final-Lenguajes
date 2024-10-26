@@ -4,6 +4,9 @@
 
 package com.mycompany.proyectofinallenguajes;
 
+import com.mycompany.proyectofinallenguajes.Frontend.Interfaz;
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author herson
@@ -11,6 +14,11 @@ package com.mycompany.proyectofinallenguajes;
 public class ProyectoFinalLenguajes {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+                       SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Interfaz().setVisible(true);
+            }
+        });
     }
 }
