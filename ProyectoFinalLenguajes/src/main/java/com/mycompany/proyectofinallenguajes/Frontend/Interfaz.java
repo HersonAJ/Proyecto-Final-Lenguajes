@@ -7,7 +7,10 @@ package com.mycompany.proyectofinallenguajes.Frontend;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.proyectofinallenguajes.Backend.AnalizadorSintactico;
 import com.mycompany.proyectofinallenguajes.Backend.Grafica;
-import com.mycompany.proyectofinallenguajes.Backend.ReporteErrores;
+import com.mycompany.proyectofinallenguajes.Backend.Reportes.Operaciones;
+import com.mycompany.proyectofinallenguajes.Backend.Reportes.ReporteErrores;
+import com.mycompany.proyectofinallenguajes.Backend.Reportes.ReporteErroresSintacticos;
+import com.mycompany.proyectofinallenguajes.Backend.Reportes.SyntaxError;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -36,8 +39,11 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import  com.mycompany.proyectofinallenguajes.Backend.Token;
+import com.mycompany.proyectofinallenguajes.Backend.TokenType;
 import com.mycompany.proyectofinallenguajes.Lexer.Lexer;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -76,8 +82,17 @@ public class Interfaz extends JFrame {
         
         
         JMenu reportesMenu = new JMenu("Reportes");
-        JMenuItem reporteErrores = new JMenuItem("Reporte de errores");
+        JMenuItem reporteErrores = new JMenuItem("Reporte de errores de Token");
         reportesMenu.add(reporteErrores);
+        
+        JMenuItem reporteErroresSintacticos = new JMenuItem("Reporte de Errores sintacticos");
+        reportesMenu.add(reporteErroresSintacticos);
+        
+        JMenuItem reporteTablas = new JMenuItem("Reporte de tablas encontradas");
+        reportesMenu.add(reporteTablas);
+        
+        JMenuItem reporteOperaciones = new JMenuItem("Reporte de operaciones");
+        reportesMenu.add(reporteOperaciones);
 
         menuBar.add(archivoMenu);
         menuBar.add(generarGraficoMenu);
@@ -177,105 +192,171 @@ public class Interfaz extends JFrame {
             }
         });
 
-        
-boton.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String codigoFuente = textPane1.getText();
-        Lexer lexer = new Lexer(new StringReader(codigoFuente));
-        int token;
-        try {
-            while ((token = lexer.yylex()) != -1) {
-                System.out.println(token);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        java.util.List<Token> listaTokens = lexer.getLista();
-        System.out.println("Lista de tokens: " + listaTokens);
-        System.out.println("Lista de errores: " + lexer.getListaErrores());
-
-        AnalizadorSintactico parser = new AnalizadorSintactico(listaTokens);
-        parser.parse();
-
-        if (parser.errores.isEmpty()) {
-            errorLabel.setText("Análisis sintáctico completado con éxito.");
-            System.out.println("Análisis sintáctico completado con éxito.");
-        } else {
-            errorLabel.setText("Errores encontrados en el análisis sintáctico. Ver consola para más detalles.");
-            for (String error : parser.errores) {
-                System.err.println("Error sintáctico: " + error);
-                // Aquí resaltamos el error en la interfaz
+   //ejecturar el analisis     
+        boton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String codigoFuente = textPane1.getText();
+                Lexer lexer = new Lexer(new StringReader(codigoFuente));
+                int token;
                 try {
-                    String[] partesError = error.split(", en línea |, columna ");
-                    int linea = Integer.parseInt(partesError[1].trim());
-                    int columna = Integer.parseInt(partesError[2].trim());
-                    resaltarError(linea, columna);
-                } catch (Exception ex) {
-                    System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
+                    while ((token = lexer.yylex()) != -1) {
+                        System.out.println(token);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                java.util.List<Token> listaTokens = lexer.getLista();
+                System.out.println("Lista de tokens: " + listaTokens);
+                System.out.println("Lista de errores: " + lexer.getListaErrores());
+
+                AnalizadorSintactico parser = new AnalizadorSintactico(listaTokens);
+                parser.parse();
+
+                if (parser.errores.isEmpty()) {
+                    errorLabel.setText("Análisis sintáctico completado con éxito.");
+                    System.out.println("Análisis sintáctico completado con éxito.");
+                } else {
+                    errorLabel.setText("Errores encontrados en el análisis sintáctico. Ver consola para más detalles.");
+                    for (String error : parser.errores) {
+                        System.err.println("Error sintáctico: " + error);
+                        // Aquí resaltamos el error en la interfaz
+                        try {
+                            String[] partesError = error.split(", en línea |, columna ");
+                            int linea = Integer.parseInt(partesError[1].trim());
+                            int columna = Integer.parseInt(partesError[2].trim());
+                            resaltarError(linea, columna);
+                        } catch (Exception ex) {
+                            System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
+                        }
+                    }
+                }
+
+                colorearTokens(listaTokens);
+            }
+        });
+
+
+        //listener para crear archivo 
+        // Añadir acción al ítem "Crear Grafico"
+        generarGrafico.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Obtener el texto de entrada del JTextPane
+                String codigoFuente = textPane1.getText();
+
+                // Abrir JFileChooser para elegir la ruta de guardado
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Seleccionar ubicación para guardar la imagen");
+                int userSelection = fileChooser.showSaveDialog(null);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File archivo = fileChooser.getSelectedFile();
+                    String filePath = archivo.getAbsolutePath();
+
+
+                    if (!filePath.toLowerCase().endsWith(".png")) {
+                        filePath += ".png";
+                    }
+
+                    try {
+                        // Analizar el código fuente y generar la imagen
+                        Grafica.generarGraphviz(codigoFuente, filePath);
+                        System.out.println("Gráfico generado y guardado en: " + filePath);
+                    } catch (IOException | InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
-        }
+        });
 
-        colorearTokens(listaTokens);
-    }
-});
-
-
-//listener para crear archivo 
-
-
-// Añadir acción al ítem "Crear Grafico"
-generarGrafico.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Obtener el texto de entrada del JTextPane
-        String codigoFuente = textPane1.getText();
-
-        // Abrir JFileChooser para elegir la ruta de guardado
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Seleccionar ubicación para guardar la imagen");
-        int userSelection = fileChooser.showSaveDialog(null);
-
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File archivo = fileChooser.getSelectedFile();
-            String filePath = archivo.getAbsolutePath();
-
-            
-            if (!filePath.toLowerCase().endsWith(".png")) {
-                filePath += ".png";
+        //generar reporte de errores
+        reporteErrores.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Lexer lexer = new Lexer(new StringReader(textPane1.getText()));
+                int token;
+                try {
+                    while ((token = lexer.yylex()) != -1) {
+                        System.out.println(token);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                java.util.List<Token> listaErrores = lexer.getListaErrores();
+                new ReporteErrores(listaErrores);
             }
+        });
 
-            try {
-                // Analizar el código fuente y generar la imagen
-                Grafica.generarGraphviz(codigoFuente, filePath);
-                System.out.println("Gráfico generado y guardado en: " + filePath);
-            } catch (IOException | InterruptedException ex) {
-                ex.printStackTrace();
+        //reporte de tablas encontradas
+        reporteTablas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String codigoFuente = textPane1.getText();
+                List<Grafica> tablas = Grafica.analizarTablas(codigoFuente);
+                Grafica.mostrarReporteTablas(tablas);
             }
-        }
-    }
-});
+        });
 
-//generar reporte de errores
-reporteErrores.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        Lexer lexer = new Lexer(new StringReader(textPane1.getText()));
-        int token;
-        try {
-            while ((token = lexer.yylex()) != -1) {
-                System.out.println(token);
+        //reporte de operaciones
+        reporteOperaciones.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String codigoFuente = textPane1.getText();
+                List<Operaciones> operaciones = Operaciones.analizarOperaciones(codigoFuente);
+                Operaciones.mostrarReporteOperaciones(operaciones);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        java.util.List<Token> listaErrores = lexer.getListaErrores();
-        new ReporteErrores(listaErrores);
-    }
-});
+        });
 
+        //listener para los reportes de errores sintacticos 
+        reporteErroresSintacticos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+             //se asegura de ejecutar antes el analisis y asi evitar el error
+                boton.doClick();
+
+                //procesa los errores sintácticos
+                String codigoFuente = textPane1.getText();
+                Lexer lexer = new Lexer(new StringReader(codigoFuente));
+                int token;
+                try {
+                    while ((token = lexer.yylex()) != -1) {
+                        System.out.println(token);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                java.util.List<Token> listaTokens = lexer.getLista();
+                AnalizadorSintactico parser = new AnalizadorSintactico(listaTokens);
+                parser.parse();
+
+                java.util.List<SyntaxError> listaErroresSintacticos = new ArrayList<>();
+                for (String error : parser.errores) {
+                    System.err.println("Error sintáctico: " + error);
+                    try {
+                        String[] partesError = error.split(", en línea |, columna ");
+                        if (partesError.length >= 3) {
+                            String descripcion = partesError[0];
+                            int linea = Integer.parseInt(partesError[1].trim());
+                            int columna = Integer.parseInt(partesError[2].trim());
+                            Token tokenError = new Token(TokenType.ERROR, "?", linea, columna, "red");
+                            listaErroresSintacticos.add(new SyntaxError(tokenError, descripcion));
+                        } else {
+                            // Si el mensaje no tiene el formato esperado, maneja el error adecuadamente
+                            String descripcion = error;
+                            Token tokenError = new Token(TokenType.ERROR, "?", 0, 0, "red");
+                            listaErroresSintacticos.add(new SyntaxError(tokenError, descripcion));
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
+                    }
+                }
+
+                // Mostrar la ventana de reporte de errores sintácticos
+                new ReporteErroresSintacticos(listaErroresSintacticos);
+            }
+        });
 
     }
 

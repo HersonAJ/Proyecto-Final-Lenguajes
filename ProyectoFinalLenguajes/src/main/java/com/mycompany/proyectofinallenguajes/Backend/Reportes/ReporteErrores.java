@@ -2,13 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.proyectofinallenguajes.Backend;
+package com.mycompany.proyectofinallenguajes.Backend.Reportes;
 
 /**
  *
  * @author herson
  */
 
+import com.mycompany.proyectofinallenguajes.Backend.Token;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
