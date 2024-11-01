@@ -6,6 +6,7 @@ package com.mycompany.proyectofinallenguajes.Frontend;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.proyectofinallenguajes.Backend.AnalizadorSintactico;
+import com.mycompany.proyectofinallenguajes.Backend.Automatas.AnalizadorSintactico2;
 import com.mycompany.proyectofinallenguajes.Backend.Grafica;
 import com.mycompany.proyectofinallenguajes.Backend.Reportes.Operaciones;
 import com.mycompany.proyectofinallenguajes.Backend.Reportes.ReporteErrores;
@@ -193,48 +194,47 @@ public class Interfaz extends JFrame {
         });
 
    //ejecturar el analisis     
-        boton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String codigoFuente = textPane1.getText();
-                Lexer lexer = new Lexer(new StringReader(codigoFuente));
-                int token;
-                try {
-                    while ((token = lexer.yylex()) != -1) {
-                        System.out.println(token);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                java.util.List<Token> listaTokens = lexer.getLista();
-                System.out.println("Lista de tokens: " + listaTokens);
-                System.out.println("Lista de errores: " + lexer.getListaErrores());
-
-                AnalizadorSintactico parser = new AnalizadorSintactico(listaTokens);
-                parser.parse();
-
-                if (parser.errores.isEmpty()) {
-                    errorLabel.setText("Análisis sintáctico completado con éxito.");
-                    System.out.println("Análisis sintáctico completado con éxito.");
-                } else {
-                    errorLabel.setText("Errores encontrados en el análisis sintáctico. Ver consola para más detalles.");
-                    for (String error : parser.errores) {
-                        System.err.println("Error sintáctico: " + error);
-                        // Aquí resaltamos el error en la interfaz
-                        try {
-                            String[] partesError = error.split(", en línea |, columna ");
-                            int linea = Integer.parseInt(partesError[1].trim());
-                            int columna = Integer.parseInt(partesError[2].trim());
-                            resaltarError(linea, columna);
-                        } catch (Exception ex) {
-                            System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
-                        }
-                    }
-                }
-
-                colorearTokens(listaTokens);
+ boton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String codigoFuente = textPane1.getText();
+        Lexer lexer = new Lexer(new StringReader(codigoFuente));
+        int token;
+        try {
+            while ((token = lexer.yylex()) != -1) {
+                System.out.println(token);
             }
+        } catch (IOException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        java.util.List<Token> listaTokens = lexer.getLista();
+        System.out.println("Lista de tokens: " + listaTokens);
+        System.out.println("Lista de errores: " + lexer.getListaErrores());
+
+        AnalizadorSintactico2 parser = new AnalizadorSintactico2();
+        parser.parse(listaTokens);
+
+        if (parser.errores.isEmpty()) {
+            errorLabel.setText("Análisis sintáctico completado con éxito.");
+            System.out.println("Análisis sintáctico completado con éxito.");
+        } else {
+            errorLabel.setText("Errores encontrados en el análisis sintáctico. Ver consola para más detalles.");
+            for (String error : parser.errores) {
+                System.err.println("Error sintáctico: " + error);
+                // Aquí resaltamos el error en la interfaz
+                try {
+                    String[] partesError = error.split(", en línea |, columna ");
+                    int linea = Integer.parseInt(partesError[1].trim());
+                    int columna = Integer.parseInt(partesError[2].trim());
+                    resaltarError(linea, columna);
+                } catch (Exception ex) {
+                    System.err.println("Error al analizar la ubicación del error: " + ex.getMessage());
+                }
+            }
+        }
+
+        colorearTokens(listaTokens);
+    }
         });
 
 

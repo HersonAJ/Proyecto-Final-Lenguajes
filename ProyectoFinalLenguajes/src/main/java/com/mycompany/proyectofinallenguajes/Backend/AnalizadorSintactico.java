@@ -4,8 +4,6 @@
  */
 package com.mycompany.proyectofinallenguajes.Backend;
 
-import java.util.List;
-
 /**
  *
  * @author herson
