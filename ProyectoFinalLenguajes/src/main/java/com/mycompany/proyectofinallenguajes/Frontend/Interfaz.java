@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.proyectofinallenguajes.Backend.AnalizadorSintactico;
 import com.mycompany.proyectofinallenguajes.Backend.Automatas.AnalizadorSintactico2;
 import com.mycompany.proyectofinallenguajes.Backend.Grafica;
+import com.mycompany.proyectofinallenguajes.Backend.Reportes.ModificacionesTablas;
 import com.mycompany.proyectofinallenguajes.Backend.Reportes.Operaciones;
 import com.mycompany.proyectofinallenguajes.Backend.Reportes.ReporteErrores;
 import com.mycompany.proyectofinallenguajes.Backend.Reportes.ReporteErroresSintacticos;
@@ -94,6 +95,9 @@ public class Interfaz extends JFrame {
         
         JMenuItem reporteOperaciones = new JMenuItem("Reporte de operaciones");
         reportesMenu.add(reporteOperaciones);
+        
+        JMenuItem reporteModificaciones = new JMenuItem("Reporte de Modificaciones ");
+        reportesMenu.add(reporteModificaciones);
 
         menuBar.add(archivoMenu);
         menuBar.add(generarGraficoMenu);
@@ -308,6 +312,19 @@ public class Interfaz extends JFrame {
                 Operaciones.mostrarReporteOperaciones(operaciones);
             }
         });
+        
+        //reporte de modificaciones en tablas
+        reporteModificaciones.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String codigoFuente = textPane1.getText();
+                List<ModificacionesTablas> modificacionesTablas = ModificacionesTablas.analizarModificacionesTablas(codigoFuente);
+                ModificacionesTablas.mostrarReporteModificacionesTablas(modificacionesTablas);
+             }
+        });
+        
+        
+        
 
         //listener para los reportes de errores sintacticos 
         reporteErroresSintacticos.addActionListener(new ActionListener() {
